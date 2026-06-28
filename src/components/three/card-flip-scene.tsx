@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, Suspense, useMemo } from "react"
+import { useEffect, useRef, useState, Suspense } from "react"
 import { Canvas } from "@react-three/fiber"
 import { PerspectiveCamera, Environment, useTexture } from "@react-three/drei"
 import * as THREE from "three"
@@ -8,124 +8,16 @@ import gsap from "gsap"
 
 type Brand = "one-piece" | "pokemon" | "riftbound"
 
-const BRAND_CONFIG: Record<Brand, { bg: string; accent: string; text: string; label: string }> = {
-  "one-piece": { bg: "#8b0000", accent: "#d4a853", text: "#d4a853", label: "ONE PIECE" },
-  "pokemon": { bg: "#1a47b8", accent: "#ffcc00", text: "#ffffff", label: "POKÉMON" },
-  "riftbound": { bg: "#1a0a2e", accent: "#00ffff", text: "#e0c0ff", label: "RIFTBOUND" },
+const CARD_BACKS: Record<Brand, string> = {
+  "one-piece": "/card-backs/one-piece.jpg",
+  "pokemon": "/card-backs/pokemon.png",
+  "riftbound": "/card-backs/riftbound.png",
 }
 
-function generateCardBackTexture(brand: Brand): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas")
-  canvas.width = 400
-  canvas.height = 560
-  const ctx = canvas.getContext("2d")!
-  const cfg = BRAND_CONFIG[brand]
-
-  // Background with gradient
-  const bgGrad = ctx.createLinearGradient(0, 0, 400, 560)
-  bgGrad.addColorStop(0, cfg.accent + "44")
-  bgGrad.addColorStop(1, cfg.bg)
-  ctx.fillStyle = bgGrad
-  ctx.fillRect(0, 0, 400, 560)
-
-  // Border
-  ctx.strokeStyle = cfg.accent
-  ctx.lineWidth = 8
-  ctx.strokeRect(12, 12, 376, 536)
-
-  // Inner border
-  ctx.strokeStyle = cfg.accent + "88"
-  ctx.lineWidth = 2
-  ctx.strokeRect(24, 24, 352, 512)
-
-  // Center circle
-  ctx.beginPath()
-  ctx.arc(200, 220, 80, 0, Math.PI * 2)
-  ctx.strokeStyle = cfg.accent
-  ctx.lineWidth = 3
-  ctx.stroke()
-
-  // Brand-specific icon
-  if (brand === "pokemon") {
-    // Poké Ball top half
-    ctx.beginPath()
-    ctx.arc(200, 220, 70, Math.PI, 0)
-    ctx.fillStyle = "#ff3333"
-    ctx.fill()
-    // Bottom half
-    ctx.beginPath()
-    ctx.arc(200, 220, 70, 0, Math.PI)
-    ctx.fillStyle = "#ffffff"
-    ctx.fill()
-    // Center line
-    ctx.beginPath()
-    ctx.moveTo(130, 220)
-    ctx.lineTo(270, 220)
-    ctx.strokeStyle = "#333"
-    ctx.lineWidth = 4
-    ctx.stroke()
-    // Center circle
-    ctx.beginPath()
-    ctx.arc(200, 220, 20, 0, Math.PI * 2)
-    ctx.fillStyle = "#ffffff"
-    ctx.fill()
-    ctx.strokeStyle = "#333"
-    ctx.lineWidth = 3
-    ctx.stroke()
-    // Inner dot
-    ctx.beginPath()
-    ctx.arc(200, 220, 8, 0, Math.PI * 2)
-    ctx.fillStyle = "#333"
-    ctx.fill()
-  } else if (brand === "one-piece") {
-    // Skull/cross bones style
-    ctx.beginPath()
-    ctx.arc(200, 220, 70, 0, Math.PI * 2)
-    ctx.fillStyle = cfg.accent + "22"
-    ctx.fill()
-    ctx.strokeStyle = cfg.accent
-    ctx.lineWidth = 3
-    ctx.stroke()
-    // Draw "X" mark
-    ctx.beginPath()
-    ctx.moveTo(160, 180)
-    ctx.lineTo(240, 260)
-    ctx.strokeStyle = cfg.accent
-    ctx.lineWidth = 6
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(240, 180)
-    ctx.lineTo(160, 260)
-    ctx.stroke()
-  } else {
-    // Rift/Void style
-    ctx.beginPath()
-    ctx.moveTo(200, 140)
-    ctx.lineTo(260, 220)
-    ctx.lineTo(200, 300)
-    ctx.lineTo(140, 220)
-    ctx.closePath()
-    ctx.fillStyle = cfg.accent + "22"
-    ctx.fill()
-    ctx.strokeStyle = cfg.accent
-    ctx.lineWidth = 3
-    ctx.stroke()
-  }
-
-  // Brand label at bottom
-  ctx.fillStyle = cfg.text
-  ctx.font = "bold 28px 'Geist Sans', sans-serif"
-  ctx.textAlign = "center"
-  ctx.fillText(cfg.label, 200, 380)
-
-  // Smaller sub-text
-  ctx.fillStyle = cfg.accent + "aa"
-  ctx.font = "14px 'Geist Sans', sans-serif"
-  ctx.fillText("TRADING CARD GAME", 200, 410)
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.needsUpdate = true
-  return texture
+const BRAND_CONFIG: Record<Brand, { accent: string }> = {
+  "one-piece": { accent: "#d4a853" },
+  "pokemon": { accent: "#ffcc00" },
+  "riftbound": { accent: "#00ffff" },
 }
 
 function CardTexture({
@@ -139,7 +31,7 @@ function CardTexture({
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const frontTexture = imageUrl ? useTexture(imageUrl) : null
-  const backTexture = useMemo(() => generateCardBackTexture(brand), [brand])
+  const backTexture = useTexture(CARD_BACKS[brand])
 
   useEffect(() => {
     if (!animating || !meshRef.current) return
@@ -151,7 +43,7 @@ function CardTexture({
 
   return (
     <group>
-      {/* Card front */}
+      {/* Card front — real card image */}
       <mesh ref={meshRef} position={[0, 0, 0]}>
         <planeGeometry args={[1.6, 2.2]} />
         {frontTexture ? (
@@ -161,13 +53,13 @@ function CardTexture({
         )}
       </mesh>
 
-      {/* Card back — procedural texture */}
+      {/* Card back — the user's actual card back image */}
       <mesh position={[0, 0, -0.003]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[1.55, 2.15]} />
         <meshStandardMaterial map={backTexture} roughness={0.3} metalness={0.1} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Gold border accent */}
+      {/* Gold border */}
       <mesh position={[0, 0, 0.002]}>
         <planeGeometry args={[1.42, 2.02]} />
         <meshStandardMaterial color="#d4a853" roughness={0.1} metalness={0.6} side={THREE.DoubleSide} transparent opacity={0.12} />
@@ -250,5 +142,3 @@ export default function CardFlipScene({ cardName, imageUrl, brand = "one-piece",
     </div>
   )
 }
-
-export { BRAND_CONFIG }

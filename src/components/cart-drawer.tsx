@@ -66,8 +66,14 @@ export function CartDrawer() {
                   key={item.productId}
                   className="flex gap-4 rounded-xl border border-stone-100 bg-stone-50 p-3"
                 >
-                  {/* Image placeholder */}
-                  <div className="h-20 w-20 flex-shrink-0 rounded-lg bg-stone-200" />
+                  {/* Product image */}
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} className="h-20 w-20 flex-shrink-0 rounded-lg object-cover" />
+                  ) : (
+                    <div className="h-20 w-20 flex-shrink-0 rounded-lg bg-stone-200 flex items-center justify-center text-2xl">
+                      {item.type === "BOOSTER_BOX" ? "📦" : "🃏"}
+                    </div>
+                  )}
 
                   <div className="flex flex-1 flex-col justify-between">
                     <div>

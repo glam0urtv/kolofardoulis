@@ -15,20 +15,18 @@ function BoosterBox({ quantity, imageUrl }: { quantity: number; imageUrl?: strin
   useEffect(() => {
     const tl = gsap.timeline({ delay: 0.3 })
 
-    // Float up slightly
-    tl.to(groupRef.current!.position, { y: 0.2, duration: 0.5, ease: "power2.out" })
+    // Float up
+    tl.to(groupRef.current!.position, { y: 0.3, duration: 0.4, ease: "power2.out" })
 
-    // Open lid
-    tl.to(lidRef.current!.rotation, { x: -Math.PI * 0.7, duration: 0.8, ease: "power3.inOut" })
+    // Open lid + packs appear
+    tl.to(lidRef.current!.rotation, { x: -Math.PI * 0.7, duration: 0.6, ease: "power3.inOut" })
     tl.call(() => setAnimPhase(1))
+    tl.to({}, { duration: 0.8 }) // brief pause
 
-    // Packs float out
-    tl.to(groupRef.current!.position, { y: 0.4, duration: 0.4, ease: "power2.out" })
-    tl.to({}, { duration: 1.5 }) // pause to admire
-
-    // Close and settle
-    tl.to(lidRef.current!.rotation, { x: 0, duration: 0.6, ease: "power2.in" })
-    tl.to(groupRef.current!.position, { y: 0, duration: 0.5, ease: "power2.in" })
+    // Fly to cart! (bottom-right)
+    tl.to(groupRef.current!.position, { x: 3, y: -2.5, z: 2, duration: 0.7, ease: "power2.in" })
+    tl.to(groupRef.current!.scale, { x: 0.3, y: 0.3, z: 0.3, duration: 0.7, ease: "power2.in" }, "-=0.7")
+    tl.to(groupRef.current!.rotation, { z: 0.4, duration: 0.6 }, "-=0.7")
     tl.call(() => setAnimPhase(2))
   }, [])
 

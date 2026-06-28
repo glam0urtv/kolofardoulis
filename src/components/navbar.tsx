@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useCartStore } from "@/services/cart"
+import { SearchBar } from "@/components/search-bar"
 import { ShoppingCart, Menu, X, ChevronDown } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 
@@ -129,7 +130,8 @@ export function Navbar() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <SearchBar />
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("open-cart"))}
             className="relative rounded-full p-2 text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900"

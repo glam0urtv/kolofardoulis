@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 
   --color-brand: #dc2626;
   --color-brand-light: #ef4444;

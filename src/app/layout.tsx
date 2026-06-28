@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { CartDrawer } from "@/components/cart-drawer"
@@ -28,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="el" className={`${GeistSans.variable}`} suppressHydrationWarning>
+    <html lang="el">
       <body className="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased">
         <LenisProvider>
           <Navbar />

@@ -76,11 +76,9 @@ export function ProductCard({ product }: { product: Product }) {
           <h3 className="mt-1 text-sm font-semibold text-stone-900 line-clamp-2">
             {product.name}
           </h3>
-          {(product.attributes as Record<string, unknown> | null)?.set && (
+          {(product.attributes as Record<string, string> | null)?.set && (
             <p className="mt-1 text-xs text-stone-400">
-              {String(
-                (product.attributes as Record<string, unknown>).set
-              )}
+              {(product.attributes as Record<string, string>).set}
             </p>
           )}
         </div>

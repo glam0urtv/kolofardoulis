@@ -25,7 +25,6 @@ function BoosterBox({ quantity, animating }: { quantity: number; animating: bool
       {
         duration: 0.6,
         stagger: 0.15,
-        // @ts-expect-error GSAP custom properties
         y: "+=0.8",
         opacity: 1,
         ease: "back.out(2)",

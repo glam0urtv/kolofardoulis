@@ -53,3 +53,5 @@ test-results/
 coverage/
 
 /src/generated/prisma
+
+.vercel

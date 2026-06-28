@@ -1,0 +1,32 @@
+// Prisma client — active only at runtime in Vercel (supports IPv6 to Supabase).
+// Locally, use Supabase REST API via src/lib/data.ts.
+// This file is a stub — will be activated when Stripe is connected.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _prisma: any = null
+
+function getPrisma() {
+  if (_prisma) return _prisma
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("../generated/prisma/client")
+    _prisma = new mod.PrismaClient()
+    return _prisma
+  } catch {
+    // Prisma not available (local dev without IPv6)
+    return null
+  }
+}
+
+// Proxy that lazy-loads Prisma. If Prisma is not available, returns a no-op.
+export const prisma = new Proxy({} as Record<string, unknown>, {
+  get(_target, prop) {
+    const p = getPrisma()
+    if (!p) {
+      // Return no-op functions for local dev without Prisma
+      if (prop === "$transaction") return (ops: Promise<unknown>[]) => Promise.all(ops)
+      return () => Promise.resolve(null)
+    }
+    return (p as Record<string, unknown>)[prop as string]
+  },
+})

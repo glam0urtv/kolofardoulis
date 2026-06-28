@@ -9,9 +9,9 @@
  * When Prisma is available, swap these for direct Prisma calls.
  */
 
-const BASE = process.env.SUPABASE_URL!
+const BASE = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL!
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 type FetchOpts = {
   select?: string

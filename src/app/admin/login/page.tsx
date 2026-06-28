@@ -35,14 +35,15 @@ export default function AdminLoginPage() {
       return
     }
 
-    // Check if user has admin role
-    const { data } = await supabase
-      .from("User")
-      .select("role")
-      .eq("email", email)
-      .single()
+    // Check if user has admin role via server-side API (bypasses RLS)
+    const roleRes = await fetch("/api/auth/check-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+    const { role } = await roleRes.json()
 
-    if (data?.role !== "ADMIN") {
+    if (role !== "ADMIN") {
       await supabase.auth.signOut()
       setError("Δεν έχετε δικαιώματα διαχειριστή")
       setLoading(false)

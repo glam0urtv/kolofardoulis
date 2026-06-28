@@ -1,19 +1,10 @@
-"use client"
-
-import { useState } from "react"
+import { getFeaturedProducts } from "@/lib/data"
 import { formatPrice } from "@/lib/utils"
-import { mockProducts } from "@/lib/mock-data"
 import { Plus, Search, Pencil, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 
-export default function AdminProducts() {
-  const [search, setSearch] = useState("")
-
-  const filtered = mockProducts.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase())
-  )
+export default async function AdminProducts() {
+  const products = await getFeaturedProducts(100)
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -21,7 +12,7 @@ export default function AdminProducts() {
         <div>
           <h1 className="text-2xl font-bold text-stone-900">Προϊόντα</h1>
           <p className="mt-1 text-sm text-stone-500">
-            {mockProducts.length} προϊόντα στο κατάστημα
+            {products.length} προϊόντα στο κατάστημα
           </p>
         </div>
         <button className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-800">
@@ -30,19 +21,15 @@ export default function AdminProducts() {
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
         <input
           type="text"
           placeholder="Αναζήτηση προϊόντων..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-xl border border-stone-200 bg-white py-3 pl-10 pr-4 text-sm transition-colors focus:border-stone-400 focus:outline-none"
         />
       </div>
 
-      {/* Product table */}
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
         <table className="w-full">
           <thead>
@@ -52,9 +39,6 @@ export default function AdminProducts() {
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-400">
                 Τύπος
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-stone-400">
-                Κατηγορία
               </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-stone-400">
                 Τιμή
@@ -69,7 +53,7 @@ export default function AdminProducts() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((product) => (
+            {products.map((product) => (
               <tr
                 key={product.id}
                 className="border-b border-stone-50 transition-colors hover:bg-stone-50"
@@ -92,19 +76,18 @@ export default function AdminProducts() {
                     {product.type}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-stone-500">
-                  {product.category}
-                </td>
                 <td className="px-4 py-3 text-right text-sm font-semibold text-stone-900">
                   {formatPrice(product.priceCents)}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span
                     className={`text-sm font-semibold ${
-                      product.stock <= 2 ? "text-red-600" : "text-stone-600"
+                      (product.inventory?.stock ?? 0) <= 2
+                        ? "text-red-600"
+                        : "text-stone-600"
                     }`}
                   >
-                    {product.stock}
+                    {product.inventory?.stock ?? 0}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center">

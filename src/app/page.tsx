@@ -1,8 +1,8 @@
 import { ProductCard } from "@/components/product-card"
-import { mockProducts } from "@/lib/mock-data"
+import { getFeaturedProducts, getCategories } from "@/lib/data"
 import Link from "next/link"
 
-const categories = [
+const categoryHighlights = [
   {
     name: "Booster Boxes",
     slug: "booster-boxes",
@@ -29,13 +29,9 @@ const categories = [
   },
 ]
 
-export default function HomePage() {
-  const featured = mockProducts.filter((p) => p.isActive).slice(0, 6)
-  const newArrivals = mockProducts
-    .filter((p) => p.isActive)
-    .slice()
-    .reverse()
-    .slice(0, 4)
+export default async function HomePage() {
+  let featured = await getFeaturedProducts(6)
+  let newArrivals = await getFeaturedProducts(4)
 
   return (
     <div className="space-y-16">
@@ -71,7 +67,7 @@ export default function HomePage() {
       <section>
         <h2 className="text-2xl font-bold text-stone-900">Κατηγορίες</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((cat) => (
+          {categoryHighlights.map((cat) => (
             <Link
               key={cat.slug}
               href={`/category/${cat.slug}`}
@@ -87,40 +83,44 @@ export default function HomePage() {
       </section>
 
       {/* Featured */}
-      <section>
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-stone-900">Προτεινόμενα</h2>
-          <Link
-            href="/category/singles"
-            className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-700"
-          >
-            Προβολή όλων →
-          </Link>
-        </div>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      {featured.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-stone-900">Προτεινόμενα</h2>
+            <Link
+              href="/category/singles"
+              className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-700"
+            >
+              Προβολή όλων →
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* New Arrivals */}
-      <section>
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-stone-900">Νέες Αφίξεις</h2>
-          <Link
-            href="/category/singles"
-            className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-700"
-          >
-            Προβολή όλων →
-          </Link>
-        </div>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      {newArrivals.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-stone-900">Νέες Αφίξεις</h2>
+            <Link
+              href="/category/singles"
+              className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-700"
+            >
+              Προβολή όλων →
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {newArrivals.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

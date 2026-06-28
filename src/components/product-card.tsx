@@ -4,7 +4,7 @@ import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
 import { useCartStore } from "@/services/cart"
 import { ShoppingCart } from "lucide-react"
-import type { MockProduct } from "@/lib/mock-data"
+import type { Product } from "@/lib/data"
 
 const typeLabels: Record<string, string> = {
   SINGLE: "Single",
@@ -20,9 +20,10 @@ const typeBadgeColors: Record<string, string> = {
   PROMO: "bg-purple-100 text-purple-700",
 }
 
-export function ProductCard({ product }: { product: MockProduct }) {
+export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem)
-  const soldOut = product.stock <= 0
+  const stock = product.inventory?.stock ?? 0
+  const soldOut = stock <= 0
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -35,7 +36,7 @@ export function ProductCard({ product }: { product: MockProduct }) {
       priceCents: product.priceCents,
       currency: product.currency,
       type: product.type,
-      imageUrl: product.images[0],
+      imageUrl: product.images?.[0]?.url,
     })
     const event = new CustomEvent("open-cart")
     window.dispatchEvent(event)
@@ -46,7 +47,6 @@ export function ProductCard({ product }: { product: MockProduct }) {
       href={`/product/${product.slug}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white transition-all hover:shadow-lg"
     >
-      {/* Image */}
       <div className="relative aspect-[4/3] bg-stone-100">
         <div className="flex h-full items-center justify-center text-4xl">
           {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
@@ -65,16 +65,16 @@ export function ProductCard({ product }: { product: MockProduct }) {
         )}
       </div>
 
-      {/* Info */}
       <div className="flex flex-1 flex-col justify-between p-4">
         <div>
-          <p className="text-xs text-stone-500">{product.category}</p>
           <h3 className="mt-1 text-sm font-semibold text-stone-900 line-clamp-2">
             {product.name}
           </h3>
-          {product.attributes?.set && (
+          {(product.attributes as Record<string, unknown> | null)?.set && (
             <p className="mt-1 text-xs text-stone-400">
-              {product.attributes.set}
+              {String(
+                (product.attributes as Record<string, unknown>).set
+              )}
             </p>
           )}
         </div>

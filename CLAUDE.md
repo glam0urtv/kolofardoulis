@@ -94,11 +94,11 @@ Always delegate to the correct subagent. Never do everything in the main context
 
 | Feature | Status | Notes |
 |---|---|---|
-| data-model | ⚠️ | Prisma schema έτοιμο, SQL migration pending (Supabase IPv6) |
-| storefront | ⚠️ | Home, category, product pages + navbar/cart/footer — mock data |
+| data-model | ✅ | 10 tables + 4 enums migrated, 5 categories + 8 products seeded |
+| storefront | ⚠️ | Home, category, product pages + cart — needs Supabase data fetching |
 | checkout | ⚠️ | Checkout API + Stripe integration + atomic reservation code |
-| inventory | ⚠️ | Inventory service με atomic UPDATE, reservation expiry |
-| admin | ⚠️ | Dashboard, categories, products, orders pages — no DB yet |
+| inventory | ⚠️ | Inventory service έτοιμο — DB connection pending IPv6 resolution |
+| admin | ⚠️ | Dashboard, categories, products, orders — needs live data wiring |
 | animations-3d | ⚠️ | ShowcaseScene, BoosterBoxScene, CardFlipScene + reduced-motion fallback |
 | realtime | 🚧 | Φάση 6 — Supabase Realtime sold-out, rate limiting |
 | polish-launch | 🚧 | Φάση 7 — accessibility, Sentry, legal texts, launch |

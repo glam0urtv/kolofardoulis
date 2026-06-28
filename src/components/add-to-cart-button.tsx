@@ -1,19 +1,15 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { formatPrice } from "@/lib/utils"
-import type { MockProduct } from "@/lib/mock-data"
+import type { Product } from "@/lib/data"
 
 interface Props {
-  product: MockProduct
+  product: Product
   disabled?: boolean
 }
 
 export function AddToCartButton({ product, disabled }: Props) {
-  const router = useRouter()
-
   const handleClick = () => {
-    // Import dynamically to avoid SSR issues with zustand
     import("@/services/cart").then(({ useCartStore }) => {
       useCartStore.getState().addItem({
         productId: product.id,
@@ -22,7 +18,7 @@ export function AddToCartButton({ product, disabled }: Props) {
         priceCents: product.priceCents,
         currency: product.currency,
         type: product.type,
-        imageUrl: product.images[0],
+        imageUrl: product.images?.[0]?.url,
       })
       window.dispatchEvent(new CustomEvent("open-cart"))
     })

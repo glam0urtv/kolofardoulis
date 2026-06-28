@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { mockProducts } from "@/lib/mock-data"
+import { getProduct, getCategoryProducts } from "@/lib/data"
 import { formatPrice } from "@/lib/utils"
 import { AddToCartButton } from "@/components/add-to-cart-button"
 import Link from "next/link"
@@ -11,12 +11,9 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const product = mockProducts.find((p) => p.slug === slug)
+  const product = await getProduct(slug)
   if (!product) return { title: "Προϊόν" }
-  return {
-    title: product.name,
-    description: product.description,
-  }
+  return { title: product.name, description: product.description || undefined }
 }
 
 const typeLabels: Record<string, string> = {
@@ -28,47 +25,33 @@ const typeLabels: Record<string, string> = {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
-  const product = mockProducts.find((p) => p.slug === slug)
-
+  const product = await getProduct(slug)
   if (!product) notFound()
 
-  const related = mockProducts
-    .filter(
-      (p) =>
-        p.categorySlug === product.categorySlug &&
-        p.id !== product.id &&
-        p.isActive
-    )
-    .slice(0, 4)
+  const soldOut = (product.inventory?.stock ?? 0) <= 0
 
-  const soldOut = product.stock <= 0
+  // Get related products from same category
+  const related = (await getCategoryProducts(slug)).filter(
+    (p) => p.id !== product.id
+  )
+
+  const attr = product.attributes as Record<string, unknown> | null
 
   return (
     <div className="space-y-16">
-      {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-stone-500">
         <Link href="/" className="hover:text-stone-700">
           Αρχική
         </Link>
         <span>/</span>
-        <Link
-          href={`/category/${product.categorySlug}`}
-          className="hover:text-stone-700"
-        >
-          {product.category}
-        </Link>
-        <span>/</span>
         <span className="text-stone-900">{product.name}</span>
       </nav>
 
-      {/* Product detail */}
       <div className="grid gap-10 lg:grid-cols-2">
-        {/* Image */}
         <div className="aspect-square rounded-3xl bg-stone-100 flex items-center justify-center text-8xl">
           {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
         </div>
 
-        {/* Info */}
         <div className="flex flex-col justify-center">
           <span className="text-sm font-medium text-brand">
             {typeLabels[product.type]}
@@ -80,53 +63,24 @@ export default async function ProductPage({ params }: Props) {
             {product.description}
           </p>
 
-          {/* Attributes */}
-          {product.attributes && (
+          {attr && (
             <div className="mt-6 grid grid-cols-2 gap-3">
-              {product.attributes.set && (
-                <div className="rounded-lg border border-stone-200 px-3 py-2">
+              {Object.entries(attr).map(([key, value]) => (
+                <div
+                  key={key}
+                  className="rounded-lg border border-stone-200 px-3 py-2"
+                >
                   <span className="text-[11px] uppercase text-stone-400">
-                    Set
+                    {key}
                   </span>
                   <p className="text-sm font-medium text-stone-700">
-                    {product.attributes.set}
+                    {String(value)}
                   </p>
                 </div>
-              )}
-              {product.attributes.rarity && (
-                <div className="rounded-lg border border-stone-200 px-3 py-2">
-                  <span className="text-[11px] uppercase text-stone-400">
-                    Rarity
-                  </span>
-                  <p className="text-sm font-medium text-stone-700">
-                    {product.attributes.rarity}
-                  </p>
-                </div>
-              )}
-              {product.attributes.condition && (
-                <div className="rounded-lg border border-stone-200 px-3 py-2">
-                  <span className="text-[11px] uppercase text-stone-400">
-                    Κατάσταση
-                  </span>
-                  <p className="text-sm font-medium text-stone-700">
-                    {product.attributes.condition}
-                  </p>
-                </div>
-              )}
-              {product.attributes.language && (
-                <div className="rounded-lg border border-stone-200 px-3 py-2">
-                  <span className="text-[11px] uppercase text-stone-400">
-                    Γλώσσα
-                  </span>
-                  <p className="text-sm font-medium text-stone-700">
-                    {product.attributes.language}
-                  </p>
-                </div>
-              )}
+              ))}
             </div>
           )}
 
-          {/* Price & CTA */}
           <div className="mt-8 flex items-end justify-between border-t border-stone-200 pt-6">
             <div>
               <span className="text-sm text-stone-500">Τιμή</span>
@@ -139,7 +93,7 @@ export default async function ProductPage({ params }: Props) {
                 </span>
               ) : (
                 <span className="text-sm text-stone-400">
-                  {product.stock} τεμάχια διαθέσιμα
+                  {product.inventory?.stock ?? 0} τεμάχια διαθέσιμα
                 </span>
               )}
             </div>
@@ -149,14 +103,13 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Related products */}
       {related.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold text-stone-900">
             Σχετικά προϊόντα
           </h2>
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {related.map((p) => (
+            {related.slice(0, 4).map((p) => (
               <Link
                 key={p.id}
                 href={`/product/${p.slug}`}

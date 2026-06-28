@@ -16,13 +16,19 @@ export async function GET(req: NextRequest) {
     if (productSlug) {
       productsUrl = `${BASE}/rest/v1/Product?select=*&slug=eq.${productSlug}`
     } else if (categorySlug) {
-      const catRes = await fetch(
-        `${BASE}/rest/v1/Category?select=id&slug=eq.${categorySlug}`,
+      // Get the category AND its children (for parent categories like "Pokemon")
+      const allCatsRes = await fetch(
+        `${BASE}/rest/v1/Category?select=id,slug,parentId`,
         { headers: HEADERS }
       )
-      const cats = await catRes.json()
-      if (cats?.[0]) {
-        productsUrl = `${BASE}/rest/v1/Product?select=*&categoryId=eq.${cats[0].id}&isActive=eq.true&limit=${limit}&order=createdAt.desc`
+      const allCats = await allCatsRes.json()
+      const targetCat = (allCats as {id:string;slug:string;parentId:string|null}[]).find((c) => c.slug === categorySlug)
+      if (targetCat) {
+        const childIds = (allCats as {id:string;parentId:string|null}[])
+          .filter((c) => c.parentId === targetCat.id)
+          .map((c) => c.id)
+        const allIds = [targetCat.id, ...childIds].join(",")
+        productsUrl = `${BASE}/rest/v1/Product?select=*&categoryId=in.(${allIds})&isActive=eq.true&limit=${limit}&order=createdAt.desc`
       }
     } else {
       productsUrl = `${BASE}/rest/v1/Product?select=*&isActive=eq.true&limit=${limit}&order=createdAt.desc`

@@ -21,6 +21,15 @@ const typeBadgeColors: Record<string, string> = {
   PROMO: "bg-purple-100 text-purple-700",
 }
 
+// Determine TCG brand from categoryId prefix
+function getBrand(categoryId: string): { name: string; color: string } | null {
+  if (categoryId === "cat_001" || categoryId.startsWith("cat_00") && categoryId <= "cat_005") return { name: "One Piece", color: "bg-red-50 text-red-600" }
+  if (categoryId.startsWith("cat_00") && categoryId >= "cat_006" && categoryId <= "cat_009") return { name: "Pokémon", color: "bg-yellow-50 text-yellow-700" }
+  if (categoryId.startsWith("cat_01")) return { name: "Riftbound", color: "bg-purple-50 text-purple-600" }
+  if (categoryId === "cat_002" || categoryId === "cat_003" || categoryId === "cat_004" || categoryId === "cat_005") return { name: "One Piece", color: "bg-red-50 text-red-600" }
+  return null
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem)
   const stock = product.inventory?.stock ?? 0
@@ -67,11 +76,16 @@ export function ProductCard({ product }: { product: Product }) {
             {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
           </div>
         )}
-        <span
-          className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${typeBadgeColors[product.type]}`}
-        >
-          {typeLabels[product.type]}
-        </span>
+        <div className="absolute left-3 top-3 flex gap-1.5">
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${typeBadgeColors[product.type]}`}>
+            {typeLabels[product.type]}
+          </span>
+          {getBrand(product.categoryId) && (
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getBrand(product.categoryId)!.color}`}>
+              {getBrand(product.categoryId)!.name}
+            </span>
+          )}
+        </div>
         {soldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
             <span className="rounded-full bg-white px-4 py-1.5 text-sm font-bold text-stone-900">

@@ -39,16 +39,9 @@ export default function EditProductPage({ params }: Props) {
   }, [])
 
   const fetchProduct = async (id: string) => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Product?select=*,inventory(stock)&id=eq.${id}`,
-      {
-        headers: {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-        },
-      }
-    )
-    const [product] = await res.json()
+    const res = await fetch(`/api/products?limit=100`)
+    const all = await res.json()
+    const product = (Array.isArray(all) ? all : []).find((p: {id:string}) => p.id === id)
     if (product) {
       setForm({
         name: product.name,

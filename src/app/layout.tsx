@@ -3,7 +3,6 @@ import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { CartDrawer } from "@/components/cart-drawer"
 import { Footer } from "@/components/footer"
-import { LenisProvider } from "@/components/lenis-provider"
 import { PurchaseAnimationOverlay } from "@/components/purchase-animation-overlay"
 
 export const metadata: Metadata = {
@@ -29,14 +28,12 @@ export default function RootLayout({
   return (
     <html lang="el">
       <body className="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased">
-        <LenisProvider>
-          <Navbar />
-          <main className="mx-auto max-w-[1440px] px-4 pb-24 pt-20 md:px-8">
-            {children}
-          </main>
-          <CartDrawer />
-          <Footer />
-        </LenisProvider>
+        <Navbar />
+        <main className="mx-auto max-w-[1440px] px-4 pb-24 pt-20 md:px-8">
+          {children}
+        </main>
+        <CartDrawer />
+        <Footer />
         <PurchaseAnimationOverlay />
       </body>
     </html>

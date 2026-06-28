@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     )
 
     const imageMap = new Map<string, { url: string; alt: string | null }[]>()
-    const isExternal = (url: string) => url.includes("assets.tcgdex.net") || url.includes("optcgapi.com")
+    const isExternal = (url: string) => url.includes("assets.tcgdex.net") || url.includes("optcgapi.com") || url.includes("images.pokemontcg.io") || url.includes("images.scrydex.com")
 
     for (const m of (Array.isArray(media) ? media : [])) {
       const existing = imageMap.get(m.productId) || []

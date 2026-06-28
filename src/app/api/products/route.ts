@@ -58,15 +58,14 @@ export async function GET(req: NextRequest) {
     )
 
     const imageMap = new Map<string, { url: string; alt: string | null }[]>()
-    const APP_URL = process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
-    const proxyBase = APP_URL ? `https://${APP_URL}` : ""
+    const isExternal = (url: string) => url.includes("assets.tcgdex.net") || url.includes("optcgapi.com")
 
     for (const m of (Array.isArray(media) ? media : [])) {
       const existing = imageMap.get(m.productId) || []
-      // Rewrite external image URLs through our proxy to avoid CORS
+      // Rewrite external image URLs through our proxy (relative URL = always current deployment)
       let imgUrl = m.url
-      if (proxyBase && (imgUrl.includes("assets.tcgdex.net") || imgUrl.includes("optcgapi.com"))) {
-        imgUrl = `${proxyBase}/api/image-proxy?url=${encodeURIComponent(imgUrl)}`
+      if (isExternal(imgUrl)) {
+        imgUrl = `/api/image-proxy?url=${encodeURIComponent(imgUrl)}`
       }
       existing.push({ url: imgUrl, alt: m.alt })
       imageMap.set(m.productId, existing)

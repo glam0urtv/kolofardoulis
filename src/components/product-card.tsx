@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
 import { useCartStore } from "@/services/cart"
-import { triggerPurchaseAnimation, getAnimationType } from "@/components/purchase-animation-overlay"
+import { triggerPurchaseAnimation, getAnimationType, getBrand as getBrandForAnimation } from "@/components/purchase-animation-overlay"
 import { ShoppingCart } from "lucide-react"
 import type { Product } from "@/lib/data"
 
@@ -48,16 +48,14 @@ export function ProductCard({ product }: { product: Product }) {
       type: product.type,
       imageUrl: product.images?.[0]?.url,
     })
-    // Open cart directly — 3D animation disabled temporarily
-    window.dispatchEvent(new CustomEvent("open-cart"))
-    return
-    // Trigger 3D purchase animation (booster box / card flip)
+    // Trigger 3D purchase animation with brand-specific card back
     triggerPurchaseAnimation({
       type: getAnimationType(product.type),
       productName: product.name,
       quantity: 1,
       productId: product.id,
       imageUrl: product.images?.[0]?.url,
+      brand: getBrandForAnimation(product.categoryId),
     })
   }
 

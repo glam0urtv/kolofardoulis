@@ -23,13 +23,14 @@ export function AddToCartButton({ product, disabled }: Props) {
     })
     // Trigger 3D purchase animation
     import("@/components/purchase-animation-overlay").then(
-      ({ triggerPurchaseAnimation, getAnimationType }) => {
+      ({ triggerPurchaseAnimation, getAnimationType, getBrand: getBrandAnim }) => {
         triggerPurchaseAnimation({
           type: getAnimationType(product.type),
           productName: product.name,
           quantity: 1,
           productId: product.id,
           imageUrl: product.images?.[0]?.url,
+          brand: getBrandAnim(product.categoryId),
         })
       }
     )

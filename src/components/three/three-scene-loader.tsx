@@ -67,10 +67,12 @@ export function LazyBoosterBoxScene({
 export function LazyCardFlipScene({
   cardName,
   imageUrl,
+  brand,
   onComplete,
 }: {
   cardName: string
   imageUrl?: string
+  brand?: "one-piece" | "pokemon" | "riftbound"
   onComplete?: () => void
 }) {
   return (
@@ -81,7 +83,7 @@ export function LazyCardFlipScene({
         </div>
       }
     >
-      <CardFlipScene cardName={cardName} imageUrl={imageUrl} onComplete={onComplete} />
+      <CardFlipScene cardName={cardName} imageUrl={imageUrl} brand={brand} onComplete={onComplete} />
     </Suspense>
   )
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { LazyBoosterBoxScene, LazyCardFlipScene } from "@/components/three/three-scene-loader"
 
 type AnimationType = "booster-box" | "card-flip"
+type Brand = "one-piece" | "pokemon" | "riftbound"
 
 type AnimationState = {
   type: AnimationType
@@ -11,6 +12,7 @@ type AnimationState = {
   quantity: number
   productId: string
   imageUrl?: string
+  brand: Brand
 } | null
 
 export function triggerPurchaseAnimation(state: {
@@ -19,19 +21,23 @@ export function triggerPurchaseAnimation(state: {
   quantity: number
   productId: string
   imageUrl?: string
+  brand: Brand
 }) {
   window.dispatchEvent(new CustomEvent("purchase-animation", { detail: state }))
 }
 
 export function getAnimationType(productType: string): AnimationType {
   switch (productType) {
-    case "BOOSTER_BOX":
-      return "booster-box"
-    case "SINGLE":
-    case "PROMO":
-    default:
-      return "card-flip"
+    case "BOOSTER_BOX": return "booster-box"
+    case "SINGLE": case "PROMO": default: return "card-flip"
   }
+}
+
+// Map categoryId prefix to brand
+export function getBrand(categoryId: string): Brand {
+  if (categoryId === "cat_001" || (categoryId >= "cat_002" && categoryId <= "cat_005")) return "one-piece"
+  if (categoryId >= "cat_006" && categoryId <= "cat_009") return "pokemon"
+  return "riftbound"
 }
 
 export function PurchaseAnimationOverlay() {
@@ -59,6 +65,7 @@ export function PurchaseAnimationOverlay() {
           <LazyCardFlipScene
             cardName={animation.productName}
             imageUrl={animation.imageUrl}
+            brand={animation.brand}
             onComplete={handleComplete}
           />
         )}

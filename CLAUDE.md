@@ -94,12 +94,12 @@ Always delegate to the correct subagent. Never do everything in the main context
 
 | Feature | Status | Notes |
 |---|---|---|
-| data-model | 🚧 | Φάση 1 — Prisma schema, migrations, seed data |
-| storefront | 🚧 | Φάση 2 — category nav, product listing, cart |
-| checkout | 🚧 | Φάση 2 — Stripe integration, atomic reservations |
-| inventory | 🚧 | Φάση 1–2 — stock management, StockReservation, audit log |
-| admin | 🚧 | Φάση 3 — CRUD categories/products/orders/sections |
-| animations-3d | 🚧 | Φάση 4–5 — R3F scenes, GSAP scroll, purchase animations |
+| data-model | ⚠️ | Prisma schema έτοιμο, SQL migration pending (Supabase IPv6) |
+| storefront | ⚠️ | Home, category, product pages + navbar/cart/footer — mock data |
+| checkout | ⚠️ | Checkout API + Stripe integration + atomic reservation code |
+| inventory | ⚠️ | Inventory service με atomic UPDATE, reservation expiry |
+| admin | ⚠️ | Dashboard, categories, products, orders pages — no DB yet |
+| animations-3d | ⚠️ | ShowcaseScene, BoosterBoxScene, CardFlipScene + reduced-motion fallback |
 | realtime | 🚧 | Φάση 6 — Supabase Realtime sold-out, rate limiting |
 | polish-launch | 🚧 | Φάση 7 — accessibility, Sentry, legal texts, launch |
 

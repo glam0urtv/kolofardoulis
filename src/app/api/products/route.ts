@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 const BASE = process.env.SUPABASE_URL!
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const HEADERS = { apikey: KEY, Authorization: `Bearer ${KEY}` }
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -10,29 +11,49 @@ export async function GET(req: NextRequest) {
   const limit = searchParams.get("limit") || "50"
 
   try {
-    let url = `${BASE}/rest/v1/Product?select=*,inventory!inner(stock)&limit=${limit}`
+    let productsUrl = `${BASE}/rest/v1/Product?select=*&limit=${limit}&order=createdAt.desc`
 
     if (productSlug) {
-      url = `${BASE}/rest/v1/Product?select=*,inventory!inner(stock)&slug=eq.${productSlug}`
+      productsUrl = `${BASE}/rest/v1/Product?select=*&slug=eq.${productSlug}`
     } else if (categorySlug) {
-      // Get category ID first
       const catRes = await fetch(
         `${BASE}/rest/v1/Category?select=id&slug=eq.${categorySlug}`,
-        { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }
+        { headers: HEADERS }
       )
       const cats = await catRes.json()
       if (cats?.[0]) {
-        url = `${BASE}/rest/v1/Product?select=*,inventory!inner(stock)&categoryId=eq.${cats[0].id}&isActive=eq.true&limit=${limit}`
+        productsUrl = `${BASE}/rest/v1/Product?select=*&categoryId=eq.${cats[0].id}&isActive=eq.true&limit=${limit}&order=createdAt.desc`
       }
     } else {
-      url = `${BASE}/rest/v1/Product?select=*,inventory!inner(stock)&isActive=eq.true&order=createdAt.desc&limit=${limit}`
+      productsUrl = `${BASE}/rest/v1/Product?select=*&isActive=eq.true&limit=${limit}&order=createdAt.desc`
     }
 
-    const res = await fetch(url, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-    })
-    const data = await res.json()
-    return NextResponse.json(Array.isArray(data) ? data : [])
+    const productsRes = await fetch(productsUrl, { headers: HEADERS })
+    const products = await productsRes.json()
+    if (!Array.isArray(products) || products.length === 0) {
+      return NextResponse.json([])
+    }
+
+    // Fetch inventory separately
+    const productIds = products.map((p: { id: string }) => p.id).join(",")
+    const invRes = await fetch(
+      `${BASE}/rest/v1/Inventory?select=productId,stock&productId=in.(${productIds})`,
+      { headers: HEADERS }
+    )
+    const inventory = await invRes.json()
+    const stockMap = new Map(
+      (Array.isArray(inventory) ? inventory : []).map(
+        (i: { productId: string; stock: number }) => [i.productId, i.stock]
+      )
+    )
+
+    // Merge inventory into products
+    const merged = products.map((p: Record<string, unknown>) => ({
+      ...p,
+      inventory: [{ stock: stockMap.get(p.id as string) ?? 0 }],
+    }))
+
+    return NextResponse.json(merged)
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json([], { status: 500 })

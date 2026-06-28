@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
   const allowed = [
     "assets.tcgdex.net",
     "optcgapi.com",
+    "images.pokemontcg.io",
+    "images.scrydex.com",
   ]
   const host = new URL(url).hostname
   if (!allowed.some((h) => host.endsWith(h))) {

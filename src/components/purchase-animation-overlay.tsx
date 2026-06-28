@@ -60,7 +60,7 @@ export function PurchaseAnimationOverlay() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md">
       <div className="w-full max-w-2xl">
         {animation.type === "booster-box" ? (
-          <LazyBoosterBoxScene quantity={animation.quantity} onComplete={handleComplete} />
+          <LazyBoosterBoxScene quantity={animation.quantity} imageUrl={animation.imageUrl} onComplete={handleComplete} />
         ) : (
           <LazyCardFlipScene
             cardName={animation.productName}

@@ -46,9 +46,11 @@ export function LazyShowcaseScene() {
 
 export function LazyBoosterBoxScene({
   quantity,
+  imageUrl,
   onComplete,
 }: {
   quantity: number
+  imageUrl?: string
   onComplete?: () => void
 }) {
   return (
@@ -59,7 +61,7 @@ export function LazyBoosterBoxScene({
         </div>
       }
     >
-      <BoosterBoxScene quantity={quantity} onComplete={onComplete} />
+      <BoosterBoxScene quantity={quantity} imageUrl={imageUrl} onComplete={onComplete} />
     </Suspense>
   )
 }

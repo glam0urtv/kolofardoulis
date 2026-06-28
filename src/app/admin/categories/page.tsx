@@ -10,22 +10,36 @@ export default function AdminCategories() {
   const [editing, setEditing] = useState<Cat | null>(null)
   const [editName, setEditName] = useState("")
   const [editSlug, setEditSlug] = useState("")
+  const [adding, setAdding] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newSlug, setNewSlug] = useState("")
+  const [newParent, setNewParent] = useState("")
 
-  const load = () => {
-    fetch("/api/categories").then(r => r.json()).then(d => setCategories(Array.isArray(d) ? d : []))
-  }
+  const load = () => fetch("/api/categories").then(r => r.json()).then(d => setCategories(Array.isArray(d) ? d : []))
   useEffect(() => { load() }, [])
 
+  const parents = categories.filter(c => !c.parentId)
+
+  // Edit
   const handleEdit = (cat: Cat) => { setEditing(cat); setEditName(cat.name); setEditSlug(cat.slug) }
   const handleSave = async () => {
     if (!editing) return
     await fetch("/api/admin/manage-category", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: editing.id, name: editName, slug: editSlug }) })
     setEditing(null); load()
   }
+
+  // Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Σίγουρα; Θα διαγραφούν και όλα τα προϊόντα της.")) return
+    if (!confirm("Σίγουρα;")) return
     await fetch("/api/admin/manage-category", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
     load()
+  }
+
+  // Add new
+  const handleAdd = async () => {
+    if (!newName) return
+    await fetch("/api/admin/manage-category", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName, slug: newSlug, parentId: newParent || null }) })
+    setAdding(false); setNewName(""); setNewSlug(""); setNewParent(""); load()
   }
 
   const roots = categories.filter(c => !c.parentId)
@@ -35,7 +49,7 @@ export default function AdminCategories() {
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-stone-900">Κατηγορίες</h1><p className="mt-1 text-sm text-stone-500">{categories.length} κατηγορίες</p></div>
-        <button className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800"><Plus className="h-4 w-4" />Νέα</button>
+        <button onClick={() => setAdding(true)} className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800"><Plus className="h-4 w-4" />Νέα</button>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
@@ -68,16 +82,33 @@ export default function AdminCategories() {
 
       {/* Edit modal */}
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Επεξεργασία κατηγορίας</h3>
-              <button onClick={() => setEditing(null)}><X className="h-5 w-5 text-stone-400" /></button>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setEditing(null)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">Επεξεργασία</h3><button onClick={() => setEditing(null)}><X className="h-5 w-5 text-stone-400" /></button></div>
             <div className="space-y-4">
               <div><label className="text-xs font-semibold text-stone-500">Όνομα</label><input value={editName} onChange={e => setEditName(e.target.value)} className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm mt-1" /></div>
               <div><label className="text-xs font-semibold text-stone-500">Slug</label><input value={editSlug} onChange={e => setEditSlug(e.target.value)} className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm mt-1" /></div>
               <button onClick={handleSave} className="w-full rounded-xl bg-stone-900 py-2.5 text-sm font-semibold text-white hover:bg-stone-800">Αποθήκευση</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add modal */}
+      {adding && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setAdding(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">Νέα κατηγορία</h3><button onClick={() => setAdding(false)}><X className="h-5 w-5 text-stone-400" /></button></div>
+            <div className="space-y-4">
+              <div><label className="text-xs font-semibold text-stone-500">Όνομα *</label><input value={newName} onChange={e => setNewName(e.target.value)} placeholder="π.χ. One Piece" className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm mt-1" /></div>
+              <div><label className="text-xs font-semibold text-stone-500">Slug</label><input value={newSlug} onChange={e => setNewSlug(e.target.value)} placeholder="one-piece" className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm mt-1" /></div>
+              <div><label className="text-xs font-semibold text-stone-500">Γονική κατηγορία (υποκατηγορία)</label>
+                <select value={newParent} onChange={e => setNewParent(e.target.value)} className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm mt-1">
+                  <option value="">— Καμία (root) —</option>
+                  {parents.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+              <button onClick={handleAdd} disabled={!newName} className="w-full rounded-xl bg-stone-900 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 disabled:opacity-50">Δημιουργία</button>
             </div>
           </div>
         </div>

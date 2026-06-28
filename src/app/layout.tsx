@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="el" className={`${GeistSans.variable}`}>
+    <html lang="el" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body className="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased">
         <LenisProvider>
           <Navbar />
@@ -36,9 +36,9 @@ export default function RootLayout({
             {children}
           </main>
           <CartDrawer />
-          <PurchaseAnimationOverlay />
           <Footer />
         </LenisProvider>
+        <PurchaseAnimationOverlay />
       </body>
     </html>
   )

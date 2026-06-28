@@ -7,9 +7,10 @@ import { useState } from "react"
 
 const CATEGORIES = [
   { name: "One Piece", slug: "one-piece" },
-  { name: "Singles", slug: "singles" },
+  { name: "Pokémon", slug: "pokemon" },
+  { name: "Riftbound", slug: "riftbound" },
   { name: "Booster Boxes", slug: "booster-boxes" },
-  { name: "Booster Packs", slug: "booster-packs" },
+  { name: "Singles", slug: "singles" },
   { name: "Promo", slug: "promo" },
 ]
 

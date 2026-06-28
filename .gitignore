@@ -1,0 +1,53 @@
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+.cursor/
+*.swp
+*~
+*.session.sql
+
+# Local personal overrides
+CLAUDE.local.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+.mcp.json
+
+# Per-run outputs
+**/data/
+logs/
+*.log
+
+# Build / cache
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+bin/
+obj/
+
+# Next.js
+.next/
+out/
+
+# Turbo
+.turbo/
+
+# Stray artifacts
+nul
+
+# Testing
+playwright-report/
+test-results/
+coverage/

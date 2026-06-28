@@ -45,7 +45,7 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const itemCount = useCartStore((s) => s.itemCount())
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<number | undefined>(undefined)
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Close on outside click
   useEffect(() => {

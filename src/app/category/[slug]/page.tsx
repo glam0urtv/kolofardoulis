@@ -5,54 +5,30 @@ import { useParams } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
 import Link from "next/link"
 
-type Product = {
-  id: string; name: string; slug: string; type: string; priceCents: number; currency: string
-  description: string | null; isActive: boolean; categoryId: string
-  attributes: Record<string, unknown> | null
-  inventory?: { stock: number }[] | null
+type Prod = {
+  id: string; name: string; slug: string; type: string; priceCents: number
+  isActive: boolean; inventory?: { stock: number }[] | null
 }
 
-type Category = { id: string; name: string; slug: string; parentId: string | null }
+type Cat = { id: string; name: string; slug: string; parentId: string | null }
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>()
-  const [products, setProducts] = useState<Product[]>([])
-  const [category, setCategory] = useState<Category | null>(null)
-  const [categories, setCategories] = useState<Category[]>([])
+  const [products, setProducts] = useState<Prod[]>([])
+  const [categories, setCategories] = useState<Cat[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const BASE = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!BASE || !KEY) return
-
-    // Fetch category
-    fetch(`${BASE}/rest/v1/Category?slug=eq.${slug}`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        const cat = data?.[0]
-        setCategory(cat || null)
-        if (cat) {
-          fetch(`${BASE}/rest/v1/Product?select=*,inventory(stock)&categoryId=eq.${cat.id}&isActive=eq.true`, {
-            headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-          })
-            .then((r) => r.json())
-            .then((d) => { setProducts(Array.isArray(d) ? d : []); setLoading(false) })
-        } else {
-          setLoading(false)
-        }
-      })
-
-    // Fetch all categories for breadcrumb
-    fetch(`${BASE}/rest/v1/Category?select=id,name,slug,parentId&order=position.asc`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-    })
+    fetch("/api/categories")
       .then((r) => r.json())
       .then((d) => setCategories(Array.isArray(d) ? d : []))
+
+    fetch(`/api/products?category=${slug}`)
+      .then((r) => r.json())
+      .then((d) => { setProducts(Array.isArray(d) ? d : []); setLoading(false) })
   }, [slug])
 
+  const category = categories.find((c) => c.slug === slug)
   const parent = category?.parentId
     ? categories.find((c) => c.id === category.parentId)
     : null
@@ -76,7 +52,8 @@ export default function CategoryPage() {
       {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-stone-400">
           <span className="text-5xl">📭</span>
-          <p className="mt-4 text-lg">Δεν βρέθηκαν προϊόντα</p>
+          <p className="mt-4 text-lg">Δεν βρέθηκαν προϊόντα σε αυτή την κατηγορία</p>
+          <Link href="/" className="mt-4 text-sm font-medium text-stone-600 hover:text-stone-900">← Επιστροφή στην αρχική</Link>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

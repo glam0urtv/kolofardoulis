@@ -32,15 +32,7 @@ export function HomeClient() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const BASE = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!BASE || !KEY) {
-      setLoading(false)
-      return
-    }
-    fetch(`${BASE}/rest/v1/Product?select=*,inventory(stock)&order=createdAt.desc&limit=6`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-    })
+    fetch("/api/products?limit=6")
       .then((res) => res.json())
       .then((data) => {
         setProducts(Array.isArray(data) ? data : [])

@@ -29,40 +29,46 @@ function CardTexture({
   imageUrl?: string
   brand: Brand
 }) {
-  const meshRef = useRef<THREE.Mesh>(null)
+  const groupRef = useRef<THREE.Group>(null)
   const frontTexture = imageUrl ? useTexture(imageUrl) : null
   const backTexture = useTexture(CARD_BACKS[brand])
 
   useEffect(() => {
-    if (!animating || !meshRef.current) return
+    if (!animating || !groupRef.current) return
     const tl = gsap.timeline({ defaults: { duration: 0.7, ease: "power2.inOut" } })
-    tl.to(meshRef.current.rotation, { y: Math.PI, duration: 0.8, ease: "power3.inOut" })
-      .to(meshRef.current.position, { y: 0.3, z: 0.5, duration: 0.5, ease: "back.out(1.5)" }, "-=0.4")
-      .to(meshRef.current.rotation, { y: 0, duration: 0.8, ease: "power3.inOut" }, "+=0.5")
+
+    // Flip to back (180°) — card comes forward and rotates, showing the back image
+    tl.to(groupRef.current.rotation, { y: Math.PI, duration: 0.9, ease: "power3.inOut" })
+      .to(groupRef.current.position, { z: 0.8, duration: 0.5, ease: "back.out(2)" }, "-=0.6")
+      // Pause briefly to show the back
+      .to(groupRef.current.position, { z: 0.8, duration: 0.8, ease: "none" })
+      // Flip back to front
+      .to(groupRef.current.rotation, { y: 0, duration: 0.9, ease: "power3.inOut" })
+      .to(groupRef.current.position, { z: 0, duration: 0.5, ease: "back.in(2)" }, "-=0.6")
   }, [animating])
 
   return (
-    <group>
-      {/* Card front — real card image */}
-      <mesh ref={meshRef} position={[0, 0, 0]}>
+    <group ref={groupRef}>
+      {/* Card front — FrontSide: visible from front, invisible from back */}
+      <mesh position={[0, 0, 0.002]}>
         <planeGeometry args={[1.6, 2.2]} />
         {frontTexture ? (
-          <meshStandardMaterial map={frontTexture} roughness={0.4} side={THREE.DoubleSide} />
+          <meshStandardMaterial map={frontTexture} roughness={0.4} side={THREE.FrontSide} />
         ) : (
-          <meshStandardMaterial color="#ffffff" roughness={0.3} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#ffffff" roughness={0.3} side={THREE.FrontSide} />
         )}
       </mesh>
 
-      {/* Card back — the user's actual card back image */}
-      <mesh position={[0, 0, -0.003]} rotation={[0, Math.PI, 0]}>
+      {/* Card back — pre-rotated 180°, FrontSide: visible when card flips */}
+      <mesh position={[0, 0, -0.002]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[1.55, 2.15]} />
-        <meshStandardMaterial map={backTexture} roughness={0.3} metalness={0.1} side={THREE.DoubleSide} />
+        <meshStandardMaterial map={backTexture} roughness={0.3} metalness={0.1} side={THREE.FrontSide} />
       </mesh>
 
-      {/* Gold border */}
-      <mesh position={[0, 0, 0.002]}>
+      {/* Gold border — on both sides */}
+      <mesh position={[0, 0, 0.004]}>
         <planeGeometry args={[1.42, 2.02]} />
-        <meshStandardMaterial color="#d4a853" roughness={0.1} metalness={0.6} side={THREE.DoubleSide} transparent opacity={0.12} />
+        <meshStandardMaterial color="#d4a853" roughness={0.1} metalness={0.6} side={THREE.DoubleSide} transparent opacity={0.15} />
       </mesh>
     </group>
   )

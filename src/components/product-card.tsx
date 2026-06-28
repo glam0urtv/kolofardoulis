@@ -48,6 +48,9 @@ export function ProductCard({ product }: { product: Product }) {
       type: product.type,
       imageUrl: product.images?.[0]?.url,
     })
+    // Open cart directly — 3D animation disabled temporarily
+    window.dispatchEvent(new CustomEvent("open-cart"))
+    return
     // Trigger 3D purchase animation (booster box / card flip)
     triggerPurchaseAnimation({
       type: getAnimationType(product.type),

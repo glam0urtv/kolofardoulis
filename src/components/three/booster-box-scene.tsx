@@ -46,7 +46,7 @@ function BoosterBox({ quantity, imageUrl }: { quantity: number; imageUrl?: strin
 
       {/* Front label (textured face) */}
       <mesh position={[0, 0, 0.401]}>
-        <planeGeometry args={imageUrl ? 1.7 : 1.4, imageUrl ? 1.1 : 0.9} />
+        <planeGeometry args={imageUrl ? [1.7, 1.1] : [1.4, 0.9]} />
         {texture ? (
           <meshStandardMaterial map={texture} roughness={0.4} />
         ) : (
@@ -62,7 +62,7 @@ function BoosterBox({ quantity, imageUrl }: { quantity: number; imageUrl?: strin
         </mesh>
         {/* Lid top label */}
         <mesh position={[0, 0.076, 0]}>
-          <planeGeometry args={[1.6, 0.7]} rotation={[-Math.PI / 2, 0, 0]} />
+          <planeGeometry args={[1.6, 0.7]} />
           <meshStandardMaterial color="#292524" roughness={0.3} />
         </mesh>
       </group>

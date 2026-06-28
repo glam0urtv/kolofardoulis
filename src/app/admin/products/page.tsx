@@ -1,10 +1,44 @@
-import { getFeaturedProducts } from "@/lib/data"
+"use client"
+
+import { useState, useEffect } from "react"
 import { formatPrice } from "@/lib/utils"
 import { Plus, Search, Pencil, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 
-export default async function AdminProducts() {
-  const products = await getFeaturedProducts(100)
+type Product = {
+  id: string
+  name: string
+  slug: string
+  type: string
+  priceCents: number
+  isActive: boolean
+  inventory?: { stock: number }[] | null
+}
+
+export default function AdminProducts() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Product?select=*,inventory(stock)&order=createdAt.desc&limit=100`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => setProducts(data || []))
+  }, [])
+
+  const filtered = products.filter(
+    (p) =>
+      !search ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.slug.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -15,10 +49,13 @@ export default async function AdminProducts() {
             {products.length} προϊόντα στο κατάστημα
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-800">
+        <Link
+          href="/admin/products/new"
+          className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-800"
+        >
           <Plus className="h-4 w-4" />
           Νέο προϊόν
-        </button>
+        </Link>
       </div>
 
       <div className="relative">
@@ -26,6 +63,8 @@ export default async function AdminProducts() {
         <input
           type="text"
           placeholder="Αναζήτηση προϊόντων..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-xl border border-stone-200 bg-white py-3 pl-10 pr-4 text-sm transition-colors focus:border-stone-400 focus:outline-none"
         />
       </div>
@@ -53,60 +92,68 @@ export default async function AdminProducts() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr
-                key={product.id}
-                className="border-b border-stone-50 transition-colors hover:bg-stone-50"
-              >
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-100 text-lg">
-                      {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-stone-900">
-                        {product.name}
-                      </p>
-                      <p className="text-xs text-stone-400">{product.slug}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
-                    {product.type}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-stone-900">
-                  {formatPrice(product.priceCents)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <span
-                    className={`text-sm font-semibold ${
-                      (product.inventory?.stock ?? 0) <= 2
-                        ? "text-red-600"
-                        : "text-stone-600"
-                    }`}
-                  >
-                    {product.inventory?.stock ?? 0}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {product.isActive ? (
-                    <Eye className="mx-auto h-4 w-4 text-green-500" />
-                  ) : (
-                    <EyeOff className="mx-auto h-4 w-4 text-stone-300" />
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/products/${product.id}/edit`}
-                    className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Link>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-12 text-center text-sm text-stone-400">
+                  {search ? "Δεν βρέθηκαν προϊόντα" : "Δεν υπάρχουν προϊόντα"}
                 </td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((product) => (
+                <tr
+                  key={product.id}
+                  className="border-b border-stone-50 transition-colors hover:bg-stone-50"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-100 text-lg">
+                        {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-stone-900">
+                          {product.name}
+                        </p>
+                        <p className="text-xs text-stone-400">{product.slug}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                      {product.type}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm font-semibold text-stone-900">
+                    {formatPrice(product.priceCents)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span
+                      className={`text-sm font-semibold ${
+                        (product.inventory?.[0]?.stock ?? 0) <= 2
+                          ? "text-red-600"
+                          : "text-stone-600"
+                      }`}
+                    >
+                      {product.inventory?.[0]?.stock ?? 0}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {product.isActive ? (
+                      <Eye className="mx-auto h-4 w-4 text-green-500" />
+                    ) : (
+                      <EyeOff className="mx-auto h-4 w-4 text-stone-300" />
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/admin/products/${product.id}/edit`}
+                      className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

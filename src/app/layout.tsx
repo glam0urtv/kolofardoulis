@@ -5,6 +5,7 @@ import { Navbar } from "@/components/navbar"
 import { CartDrawer } from "@/components/cart-drawer"
 import { Footer } from "@/components/footer"
 import { LenisProvider } from "@/components/lenis-provider"
+import { PurchaseAnimationOverlay } from "@/components/purchase-animation-overlay"
 
 export const metadata: Metadata = {
   title: {
@@ -35,6 +36,7 @@ export default function RootLayout({
             {children}
           </main>
           <CartDrawer />
+          <PurchaseAnimationOverlay />
           <Footer />
         </LenisProvider>
       </body>

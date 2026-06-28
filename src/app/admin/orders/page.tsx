@@ -1,34 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 
-const orders = [
-  {
-    id: "ord_001",
-    email: "customer@email.gr",
-    status: "PAID",
-    totalCents: 11990,
-    items: 1,
-    date: "2026-06-28 14:23",
-  },
-  {
-    id: "ord_002",
-    email: "another@email.gr",
-    status: "PAID",
-    totalCents: 2490,
-    items: 1,
-    date: "2026-06-28 12:15",
-  },
-  {
-    id: "ord_003",
-    email: "third@email.gr",
-    status: "CANCELLED",
-    totalCents: 550,
-    items: 1,
-    date: "2026-06-27 20:45",
-  },
-]
+type Order = {
+  id: string
+  email: string
+  status: string
+  totalCents: number
+  stripeSessionId: string
+  createdAt: string
+}
 
 const statusLabels: Record<string, string> = {
   PAID: "Πληρώθηκε",
@@ -45,14 +27,36 @@ const statusColors: Record<string, string> = {
 }
 
 export default function AdminOrders() {
+  const [orders, setOrders] = useState<Order[]>([])
   const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/Order?select=*&order=createdAt.desc&limit=100`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => setOrders(Array.isArray(data) ? data : []))
+  }, [])
+
+  const filtered = orders.filter(
+    (o) =>
+      !search ||
+      o.email.toLowerCase().includes(search.toLowerCase()) ||
+      o.id.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-stone-900">Παραγγελίες</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Διαχείριση παραγγελιών και επιστροφών
+          {orders.length} παραγγελίες συνολικά
         </p>
       </div>
 
@@ -83,44 +87,52 @@ export default function AdminOrders() {
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-stone-400">
                 Ποσό
               </th>
-              <th className="px-4 py-3 text-center text-xs font-semibold uppercase text-stone-400">
-                Τεμάχια
-              </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-stone-400">
                 Ημερομηνία
               </th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                className="border-b border-stone-50 transition-colors hover:bg-stone-50 cursor-pointer"
-              >
-                <td className="px-4 py-4 text-sm font-mono text-stone-500">
-                  {order.id}
-                </td>
-                <td className="px-4 py-4 text-sm text-stone-900">
-                  {order.email}
-                </td>
-                <td className="px-4 py-4">
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColors[order.status]}`}
-                  >
-                    {statusLabels[order.status]}
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-right text-sm font-semibold text-stone-900">
-                  €{(order.totalCents / 100).toFixed(2)}
-                </td>
-                <td className="px-4 py-4 text-center text-sm text-stone-500">
-                  {order.items}
-                </td>
-                <td className="px-4 py-4 text-right text-sm text-stone-400">
-                  {order.date}
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-12 text-center text-sm text-stone-400">
+                  {search ? "Δεν βρέθηκαν παραγγελίες" : "Δεν υπάρχουν παραγγελίες ακόμα"}
                 </td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((order) => (
+                <tr
+                  key={order.id}
+                  className="border-b border-stone-50 transition-colors hover:bg-stone-50 cursor-pointer"
+                >
+                  <td className="px-4 py-4 text-sm font-mono text-stone-500">
+                    {order.id}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-stone-900">
+                    {order.email}
+                  </td>
+                  <td className="px-4 py-4">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColors[order.status] || "text-stone-600 bg-stone-100"}`}
+                    >
+                      {statusLabels[order.status] || order.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-right text-sm font-semibold text-stone-900">
+                    €{(order.totalCents / 100).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-4 text-right text-sm text-stone-400">
+                    {new Date(order.createdAt).toLocaleDateString("el-GR", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/product-card"
-import { getFeaturedProducts, getCategories } from "@/lib/data"
+import { getFeaturedProducts } from "@/lib/data"
+import { LazyShowcaseScene } from "@/components/three/three-scene-loader"
 import Link from "next/link"
 
 const categoryHighlights = [
@@ -35,17 +36,17 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-16">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-stone-900 px-6 py-20 text-center text-white md:py-32">
-        <div className="relative z-10 mx-auto max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+      {/* Hero with 3D Showcase */}
+      <section className="relative overflow-hidden rounded-3xl">
+        <LazyShowcaseScene />
+        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white">
+          <h1 className="text-4xl font-bold tracking-tight drop-shadow-lg md:text-5xl lg:text-6xl">
             Το trading card game κατάστημά σου
           </h1>
-          <p className="mt-4 text-lg text-stone-300 md:text-xl">
-            One Piece TCG • Singles • Booster Boxes • Promo κάρτες. Από παίκτες,
-            για παίκτες.
+          <p className="mt-4 text-lg text-stone-200 drop-shadow md:text-xl">
+            One Piece TCG • Singles • Booster Boxes • Promo κάρτες
           </p>
-          <div className="mt-8 flex justify-center gap-4">
+          <div className="pointer-events-auto mt-8 flex justify-center gap-4">
             <Link
               href="/category/booster-boxes"
               className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-100"
@@ -54,13 +55,12 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/category/singles"
-              className="rounded-xl bg-stone-700 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-stone-600"
+              className="rounded-xl bg-white/20 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/30"
             >
               Singles
             </Link>
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-stone-800/50 to-stone-900" />
       </section>
 
       {/* Categories */}

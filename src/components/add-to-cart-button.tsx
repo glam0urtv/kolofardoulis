@@ -20,8 +20,18 @@ export function AddToCartButton({ product, disabled }: Props) {
         type: product.type,
         imageUrl: product.images?.[0]?.url,
       })
-      window.dispatchEvent(new CustomEvent("open-cart"))
     })
+    // Trigger 3D purchase animation
+    import("@/components/purchase-animation-overlay").then(
+      ({ triggerPurchaseAnimation, getAnimationType }) => {
+        triggerPurchaseAnimation({
+          type: getAnimationType(product.type),
+          productName: product.name,
+          quantity: 1,
+          productId: product.id,
+        })
+      }
+    )
   }
 
   if (disabled) {

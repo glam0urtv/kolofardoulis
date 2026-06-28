@@ -95,13 +95,13 @@ Always delegate to the correct subagent. Never do everything in the main context
 | Feature | Status | Notes |
 |---|---|---|
 | data-model | ✅ | 10 tables + 4 enums migrated, 5 categories + 8 products seeded |
-| storefront | ✅ | Live Supabase data, SSR pages, cart, error/loading/404 states |
+| storefront | ✅ | 3D hero, live data, cart, purchase animations, error/loading/404 |
 | checkout | ⚠️ | API + atomic reservation + Stripe code ready — Stripe keys pending |
 | inventory | ✅ | Atomic UPDATE service + reservation expiry cron + audit log |
-| admin | ✅ | Live data dashboard, categories tree, products table |
-| animations-3d | ✅ | ShowcaseScene, BoosterBoxScene, CardFlipScene + reduced-motion |
+| admin | ✅ | Auth guard + login, live CRUD, product forms, search, orders |
+| animations-3d | ✅ | ShowcaseScene on hero, BoosterBoxScene, CardFlipScene + fallbacks |
 | realtime | ✅ | Supabase Realtime hook + reservation expiry cron endpoint |
-| polish-launch | ⚠️ | Error/loading/404 pages done — needs Vercel deploy + Sentry + Stripe |
+| polish-launch | ⚠️ | Error/loading/404 done — needs Vercel deploy + Sentry + Stripe |
 
 Update whenever state changes. Markers: ✅ verified end-to-end, ⚠️ partial, 🚧 in progress, ❌ broken.
 

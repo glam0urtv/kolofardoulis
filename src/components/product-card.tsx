@@ -54,9 +54,18 @@ export function ProductCard({ product }: { product: Product }) {
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white transition-all hover:shadow-lg"
     >
       <div className="relative aspect-[4/3] bg-stone-100">
-        <div className="flex h-full items-center justify-center text-4xl">
-          {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
-        </div>
+        {product.images?.[0]?.url ? (
+          <img
+            src={product.images[0].url}
+            alt={product.images[0].alt || product.name}
+            className="h-full w-full object-contain p-4"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-4xl">
+            {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
+          </div>
+        )}
         <span
           className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${typeBadgeColors[product.type]}`}
         >

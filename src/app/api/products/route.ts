@@ -34,23 +34,35 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([])
     }
 
-    // Fetch inventory separately
+    // Fetch inventory + images separately
     const productIds = products.map((p: { id: string }) => p.id).join(",")
-    const invRes = await fetch(
-      `${BASE}/rest/v1/Inventory?select=productId,stock&productId=in.(${productIds})`,
-      { headers: HEADERS }
-    )
+
+    const [invRes, mediaRes] = await Promise.all([
+      fetch(`${BASE}/rest/v1/Inventory?select=productId,stock&productId=in.(${productIds})`, { headers: HEADERS }),
+      fetch(`${BASE}/rest/v1/Media?select=productId,url,alt&productId=in.(${productIds})`, { headers: HEADERS })
+    ])
+
     const inventory = await invRes.json()
+    const media = await mediaRes.json()
+
     const stockMap = new Map(
       (Array.isArray(inventory) ? inventory : []).map(
         (i: { productId: string; stock: number }) => [i.productId, i.stock]
       )
     )
 
-    // Merge inventory into products
+    const imageMap = new Map<string, { url: string; alt: string | null }[]>()
+    for (const m of (Array.isArray(media) ? media : [])) {
+      const existing = imageMap.get(m.productId) || []
+      existing.push({ url: m.url, alt: m.alt })
+      imageMap.set(m.productId, existing)
+    }
+
+    // Merge inventory + images into products
     const merged = products.map((p: Record<string, unknown>) => ({
       ...p,
       inventory: [{ stock: stockMap.get(p.id as string) ?? 0 }],
+      images: imageMap.get(p.id as string) || [],
     }))
 
     return NextResponse.json(merged)

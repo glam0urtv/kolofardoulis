@@ -11,6 +11,7 @@ type Prod = {
   description: string | null; isActive: boolean
   attributes: Record<string, unknown> | null
   inventory?: { stock: number }[] | null
+  images?: { url: string; alt: string | null }[] | null
 }
 
 const typeLabels: Record<string, string> = {
@@ -43,8 +44,16 @@ export default function ProductPage() {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <div className="aspect-square rounded-3xl bg-stone-100 flex items-center justify-center text-8xl">
-          {product.type === "BOOSTER_BOX" ? "📦" : "🃏"}
+        <div className="aspect-square rounded-3xl bg-stone-100 flex items-center justify-center overflow-hidden">
+          {product.images?.[0]?.url ? (
+            <img
+              src={product.images[0].url}
+              alt={product.images[0].alt || product.name}
+              className="h-full w-full object-contain p-6"
+            />
+          ) : (
+            <span className="text-8xl">{product.type === "BOOSTER_BOX" ? "📦" : "🃏"}</span>
+          )}
         </div>
         <div className="flex flex-col justify-center">
           <span className="text-sm font-medium text-brand">{typeLabels[product.type]}</span>

@@ -10,27 +10,25 @@ type AnimationState = {
   productName: string
   quantity: number
   productId: string
+  imageUrl?: string
 } | null
 
-// Global event system for triggering purchase animations
 export function triggerPurchaseAnimation(state: {
   type: AnimationType
   productName: string
   quantity: number
   productId: string
+  imageUrl?: string
 }) {
   window.dispatchEvent(new CustomEvent("purchase-animation", { detail: state }))
 }
 
-function getAnimationType(
-  productType: string
-): AnimationType {
+export function getAnimationType(productType: string): AnimationType {
   switch (productType) {
     case "BOOSTER_BOX":
       return "booster-box"
     case "SINGLE":
     case "PROMO":
-      return "card-flip"
     default:
       return "card-flip"
   }
@@ -40,33 +38,15 @@ export function PurchaseAnimationOverlay() {
   const [animation, setAnimation] = useState<AnimationState>(null)
 
   useEffect(() => {
-    const handler = (e: CustomEvent<AnimationState>) => {
-      setAnimation(e.detail)
-    }
+    const handler = (e: CustomEvent<AnimationState>) => setAnimation(e.detail)
     window.addEventListener("purchase-animation", handler as EventListener)
-    return () =>
-      window.removeEventListener("purchase-animation", handler as EventListener)
-  }, [])
-
-  // Also listen for add-to-cart events
-  useEffect(() => {
-    const originalAddItem = window.addEventListener
-
-    // Intercept add-to-cart to show animation
-    const cartHandler = (e: CustomEvent) => {
-      if (e.type === "purchase-animation") return
-    }
-
-    return () => {
-      window.removeEventListener("purchase-animation", cartHandler as EventListener)
-    }
+    return () => window.removeEventListener("purchase-animation", handler as EventListener)
   }, [])
 
   if (!animation) return null
 
   const handleComplete = () => {
     setAnimation(null)
-    // Open the cart drawer after animation
     window.dispatchEvent(new CustomEvent("open-cart"))
   }
 
@@ -74,13 +54,11 @@ export function PurchaseAnimationOverlay() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md">
       <div className="w-full max-w-2xl">
         {animation.type === "booster-box" ? (
-          <LazyBoosterBoxScene
-            quantity={animation.quantity}
-            onComplete={handleComplete}
-          />
+          <LazyBoosterBoxScene quantity={animation.quantity} onComplete={handleComplete} />
         ) : (
           <LazyCardFlipScene
             cardName={animation.productName}
+            imageUrl={animation.imageUrl}
             onComplete={handleComplete}
           />
         )}
@@ -88,6 +66,3 @@ export function PurchaseAnimationOverlay() {
     </div>
   )
 }
-
-// Export helper for components to trigger the right animation type
-export { getAnimationType }

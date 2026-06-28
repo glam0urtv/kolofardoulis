@@ -1,73 +1,57 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
-import { PerspectiveCamera, Environment } from "@react-three/drei"
+import { useEffect, useRef, useState, Suspense } from "react"
+import { Canvas } from "@react-three/fiber"
+import { PerspectiveCamera, Environment, useTexture } from "@react-three/drei"
 import * as THREE from "three"
 import gsap from "gsap"
 
-function Card({
+function CardTexture({
   animating,
-  cardName,
+  imageUrl,
 }: {
   animating: boolean
-  cardName: string
+  imageUrl?: string
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
+  const texture = imageUrl ? useTexture(imageUrl) : null
 
   useEffect(() => {
     if (!animating || !meshRef.current) return
 
     const tl = gsap.timeline({ defaults: { duration: 0.7, ease: "power2.inOut" } })
 
-    // Flip animation
-    tl.to(meshRef.current.rotation, {
-      y: Math.PI,
-      duration: 0.8,
-      ease: "power3.inOut",
-    })
-      .to(
-        meshRef.current.position,
-        {
-          y: 0.3,
-          z: 0.5,
-          duration: 0.5,
-          ease: "back.out(1.5)",
-        },
-        "-=0.4"
-      )
-      .to(
-        meshRef.current.rotation,
-        {
-          y: 0,
-          duration: 0.8,
-          ease: "power3.inOut",
-        },
-        "+=0.5"
-      )
+    tl.to(meshRef.current.rotation, { y: Math.PI, duration: 0.8, ease: "power3.inOut" })
+      .to(meshRef.current.position, { y: 0.3, z: 0.5, duration: 0.5, ease: "back.out(1.5)" }, "-=0.4")
+      .to(meshRef.current.rotation, { y: 0, duration: 0.8, ease: "power3.inOut" }, "+=0.5")
   }, [animating])
+
+  // Card colors
+  const frontColor = texture ? "#ffffff" : "#dc2626"
+  const backColor = texture ? "#1c1917" : "#d4a853"
 
   return (
     <group>
-      {/* Card face 1 (front) */}
+      {/* Card front — shows the real card image */}
       <mesh ref={meshRef} position={[0, 0, 0]}>
         <planeGeometry args={[1.6, 2.2]} />
-        <meshStandardMaterial
-          color="#dc2626"
-          roughness={0.3}
-          side={THREE.DoubleSide}
-        />
+        {texture ? (
+          <meshStandardMaterial map={texture} roughness={0.4} side={THREE.DoubleSide} />
+        ) : (
+          <meshStandardMaterial color={frontColor} roughness={0.3} side={THREE.DoubleSide} />
+        )}
       </mesh>
 
-      {/* Gold border accent */}
-      <mesh position={[0, 0, 0.001]} rotation={[0, 0, 0]}>
-        <planeGeometry args={[1.4, 2.0]} />
-        <meshStandardMaterial
-          color="#d4a853"
-          roughness={0.2}
-          metalness={0.5}
-          side={THREE.DoubleSide}
-        />
+      {/* Card back — visible during flip */}
+      <mesh position={[0, 0, -0.002]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[1.55, 2.15]} />
+        <meshStandardMaterial color={backColor} roughness={0.2} metalness={0.3} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Gold border */}
+      <mesh position={[0, 0, 0.002]}>
+        <planeGeometry args={[1.42, 2.02]} />
+        <meshStandardMaterial color="#d4a853" roughness={0.1} metalness={0.6} side={THREE.DoubleSide} transparent opacity={0.15} />
       </mesh>
     </group>
   )
@@ -75,10 +59,11 @@ function Card({
 
 interface Props {
   cardName: string
+  imageUrl?: string
   onComplete?: () => void
 }
 
-export default function CardFlipScene({ cardName, onComplete }: Props) {
+export default function CardFlipScene({ cardName, imageUrl, onComplete }: Props) {
   const [animating, setAnimating] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [flipped, setFlipped] = useState(false)
@@ -100,7 +85,11 @@ export default function CardFlipScene({ cardName, onComplete }: Props) {
     return (
       <div className="flex h-[400px] items-center justify-center rounded-3xl bg-stone-100">
         <div className="text-center">
-          <span className="text-7xl">🃏</span>
+          {imageUrl ? (
+            <img src={imageUrl} alt={cardName} className="mx-auto h-48 rounded-xl shadow-lg" />
+          ) : (
+            <span className="text-7xl">🃏</span>
+          )}
           <p className="mt-4 text-lg font-bold text-stone-900">{cardName}</p>
           <p className="text-sm text-stone-500">Προστέθηκε στο καλάθι σας</p>
         </div>
@@ -115,7 +104,9 @@ export default function CardFlipScene({ cardName, onComplete }: Props) {
         <ambientLight intensity={0.7} />
         <spotLight position={[3, 3, 3]} angle={0.3} penumbra={1} intensity={1.5} />
         <pointLight position={[-2, -1, 2]} intensity={0.5} color="#d4a853" />
-        <Card animating={animating} cardName={cardName} />
+        <Suspense fallback={null}>
+          <CardTexture animating={animating} imageUrl={imageUrl} />
+        </Suspense>
         <Environment preset="city" />
       </Canvas>
 

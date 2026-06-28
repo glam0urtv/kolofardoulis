@@ -45,6 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
       productName: product.name,
       quantity: 1,
       productId: product.id,
+      imageUrl: product.images?.[0]?.url,
     })
   }
 

@@ -29,6 +29,7 @@ export function AddToCartButton({ product, disabled }: Props) {
           productName: product.name,
           quantity: 1,
           productId: product.id,
+          imageUrl: product.images?.[0]?.url,
         })
       }
     )

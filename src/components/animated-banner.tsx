@@ -103,14 +103,12 @@ export default function AnimatedBanner() {
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-stone-900">
-      {/* Banner image */}
-      <div className="relative flex items-center justify-center">
-        <img
-          src="/banner.png"
-          alt="Kolofardoulis.gr"
-          className="relative z-10 w-full max-w-3xl object-contain drop-shadow-[0_0_60px_rgba(212,168,83,0.4)]"
-        />
-      </div>
+      {/* Banner image — full width, fills the entire container */}
+      <img
+        src="/banner.png"
+        alt="Kolofardoulis.gr"
+        className="relative z-10 w-full object-cover drop-shadow-[0_0_60px_rgba(212,168,83,0.4)]"
+      />
 
       {/* Particle canvas overlay */}
       <canvas
@@ -120,24 +118,6 @@ export default function AnimatedBanner() {
 
       {/* Pulsing bottom glow bar */}
       <div className="absolute bottom-0 left-0 right-0 z-20 h-px animate-pulse bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
-
-      {/* CTA overlay */}
-      <div className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-end pb-8 text-center">
-        <div className="pointer-events-auto flex gap-4">
-          <Link
-            href="/category/booster-boxes"
-            className="rounded-xl bg-white/90 px-6 py-3 text-sm font-semibold text-stone-900 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-105"
-          >
-            Booster Boxes
-          </Link>
-          <Link
-            href="/category/singles"
-            className="rounded-xl bg-white/20 px-6 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-105"
-          >
-            Singles
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }
